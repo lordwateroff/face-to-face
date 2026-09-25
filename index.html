@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Face to Face</title>
+<meta name="description" content="Случайные пары для офлайн-знакомств: раунды по 5 минут без повторов.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='9' fill='%23007cf0'/%3E%3Ccircle cx='20' cy='16' r='9' fill='%23ff0080' fill-opacity='.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #fafafa; --card: #fff; --soft: #f2f2f2; --ink: #171717; --body: #4d4d4d; --mute: #666;
+  --line: #ebebeb; --line-2: #a1a1a1; --ring: inset 0 0 0 1px #00000014;
+  --lift: 0 1px 1px #00000005, 0 2px 2px #0000000a, inset 0 0 0 1px #00000014;
+  --float: 0 1px 1px #00000005, 0 8px 16px -4px #0000000a, 0 24px 32px -8px #0000000f, inset 0 0 0 1px #00000014;
+  --blue: #0070f3; --violet: #7928ca; --violet-soft: #f5effc; --warn: #ab570a; --warn-soft: #ffefcf; --red: #c50000;
+  --g-run: linear-gradient(100deg, #007cf0, #00dfd8);
+  --g-pause: linear-gradient(100deg, #ff4d4d, #f9cb28);
+  --g-done: linear-gradient(100deg, #7928ca, #ff0080);
+  --sans: Geist, Inter, system-ui, -apple-system, sans-serif;
+  --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000; --card: #0a0a0a; --soft: #1a1a1a; --ink: #ededed; --body: #a1a1a1; --mute: #8f8f8f;
+    --line: #242424; --line-2: #454545; --ring: inset 0 0 0 1px #ffffff1f;
+    --lift: inset 0 0 0 1px #ffffff1f; --float: 0 24px 48px -12px #000, inset 0 0 0 1px #ffffff26;
+    --blue: #3291ff; --violet: #b47cf0; --violet-soft: #1c1029; --warn: #f5a623; --warn-soft: #2a1e08; --red: #ff6166;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--sans); }
+[hidden] { display: none !important; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+::selection { background: var(--ink); color: var(--bg); }
+h1, h2, h3 { font-weight: 600; margin: 0; }
+p { margin: 0; }
+.mono { font-family: var(--mono); }
+.hint { color: var(--mute); }
+.err { color: var(--red); }
+.warn { color: var(--warn); }
+
+/* buttons: 6px in-app, 100px pills only on the home screen */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 14px; border: 0; border-radius: 6px; cursor: pointer; white-space: nowrap;
+  background: var(--card); color: var(--ink); box-shadow: var(--lift); font-weight: 500; text-decoration: none;
+}
+.btn:hover { background: var(--soft); }
+.btn.primary { background: var(--ink); color: var(--bg); box-shadow: none; }
+.btn.primary:hover { opacity: .88; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.lg { height: 52px; padding: 0 22px; font-size: 17px; border-radius: 8px; }
+.btn.pill { height: 52px; padding: 0 26px; border-radius: 100px; font-size: 16px; }
+.field {
+  height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); min-width: 0;
+}
+.field:focus { border-color: var(--line-2); outline: none; }
+.field::placeholder { font-family: var(--sans); font-weight: 400; color: var(--mute); }
+
+/* home */
+.home { position: relative; min-height: 100svh; display: grid; align-content: center; gap: 28px; padding: 10vh max(16px, 7vw); overflow: hidden; isolation: isolate; }
+.home::before, .home::after {
+  content: ""; position: absolute; z-index: -1; top: 50%; width: 62vmax; height: 62vmax; margin-top: -31vmax;
+  border-radius: 50%; filter: blur(60px); opacity: .5; animation: meet 1.8s cubic-bezier(.2, .7, .2, 1) both;
+}
+.home::before { left: 50%; margin-left: -54vmax; background: radial-gradient(closest-side, #007cf0, #00dfd8 55%, transparent); --from: -18vmax; }
+.home::after { left: 50%; margin-left: -8vmax; background: radial-gradient(closest-side, #ff0080, #7928ca 50%, #f9cb2800 100%); --from: 18vmax; }
+@keyframes meet { from { transform: translateX(var(--from)); opacity: 0; } }
+.home h1 { font-size: clamp(64px, 14vw, 184px); line-height: .88; letter-spacing: -.055em; }
+.home .lead { font-size: clamp(18px, 2vw, 22px); color: var(--body); max-width: 34ch; line-height: 1.45; }
+.home .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* organizer bar */
+.bar {
+  position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 16px;
+  min-height: 64px; padding: 12px 24px; background: var(--bg); border-bottom: 1px solid var(--line); flex-wrap: wrap;
+}
+.mark { font-weight: 600; letter-spacing: -.03em; color: var(--ink); text-decoration: none; white-space: nowrap; }
+.ev-name { border: 1px solid transparent; background: none; height: 36px; padding: 0 8px; border-radius: 6px; font-weight: 500; width: min(320px, 100%); }
+.ev-name:hover, .ev-name:focus { border-color: var(--line); outline: none; }
+.tabs { display: flex; gap: 4px; }
+.tabs button { border: 0; background: none; height: 36px; padding: 0 14px; border-radius: 999px; color: var(--body); cursor: pointer; }
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-current="page"] { background: var(--soft); color: var(--ink); font-weight: 500; }
+.bar .right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.sync { color: var(--mute); font-size: 13px; }
+
+.wrap { max-width: 1440px; margin: 0 auto; padding: 24px; }
+.panel { background: var(--card); border-radius: 12px; box-shadow: var(--lift); padding: 24px; }
+.panel h2 { font-size: 20px; letter-spacing: -.02em; margin-bottom: 12px; }
+.stack { display: grid; gap: 12px; align-content: start; }
+.row-flex { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* people */
+.people { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 24px; align-items: start; }
+.people > .stack { position: sticky; top: 88px; gap: 24px; }
+textarea.field { height: 150px; padding: 10px 12px; resize: vertical; font-family: var(--mono); font-size: 14px; }
+.big { font-size: 24px; font-weight: 600; letter-spacing: -.03em; line-height: 1.25; }
+.list-head { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.list-head .field { flex: 1 1 200px; }
+.plist { list-style: none; margin: 0; padding: 0; }
+.plist li {
+  display: grid; grid-template-columns: 76px 1fr auto 128px 32px; gap: 12px; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--line);
+}
+.plist .num { font: 600 18px var(--mono); }
+.plist .who small { color: var(--mute); margin-left: 6px; }
+.plist .pid { font: 12px var(--mono); color: var(--mute); }
+.toggle { height: 32px; border-radius: 6px; border: 0; cursor: pointer; background: var(--card); box-shadow: var(--lift); font-size: 13px; font-weight: 500; }
+.toggle::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--blue); margin-right: 8px; vertical-align: 1px; }
+.plist li.off .num { color: var(--mute); text-decoration: line-through; }
+.plist li.off .who { color: var(--mute); }
+.plist li.off .toggle { background: none; box-shadow: inset 0 0 0 1px var(--line); color: var(--mute); }
+.plist li.off .toggle::before { background: var(--line-2); }
+.icon { width: 32px; height: 32px; border: 0; background: none; border-radius: 6px; color: var(--mute); cursor: pointer; font-size: 18px; }
+.icon:hover { background: var(--soft); color: var(--ink); }
+
+/* round */
+.round-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 32px; margin-bottom: 20px; }
+.round-title { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 500; color: var(--body); }
+.chip { display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 12px; border-radius: 999px; background: var(--soft); color: var(--ink); font-size: 14px; }
+.chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line-2); }
+.chip[data-state="running"]::before { background: var(--g-run); }
+.chip[data-state="paused"]::before { background: var(--g-pause); }
+.chip[data-state="done"]::before { background: var(--g-done); }
+.timer { font: 600 clamp(80px, 15vw, 220px)/.95 var(--mono); letter-spacing: -.05em; margin: 4px 0 8px -.04em; }
+.timer[data-state="running"], .timer[data-state="paused"], .timer[data-state="done"] { background: var(--g-run); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.timer[data-state="paused"] { background-image: var(--g-pause); }
+.timer[data-state="done"] { background-image: var(--g-done); }
+.stats { font-size: 18px; color: var(--body); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+.controls .spacer { flex: 1; }
+.banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 16px 20px; border-radius: 12px; margin-bottom: 20px; }
+.banner.drift { background: var(--warn-soft); color: var(--warn); }
+.banner.done { background: var(--ink); color: var(--bg); }
+.banner.done p { font-size: 22px; font-weight: 600; letter-spacing: -.02em; flex: 1; }
+.banner.done .btn { background: var(--bg); color: var(--ink); }
+.groups { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.group { background: var(--card); border-radius: 8px; box-shadow: var(--lift); padding: 12px 16px 14px; }
+.group .gno { display: block; font: 13px var(--mono); color: var(--mute); margin-bottom: 2px; }
+.nums { font: 600 clamp(24px, 2.1vw, 32px)/1.2 var(--mono); letter-spacing: -.03em; }
+.nums small { font-size: .6em; color: var(--mute); font-weight: 500; }
+.nums i { font-style: normal; font-weight: 400; color: var(--line-2); margin: 0 .25em; }
+.nums .off { color: var(--mute); text-decoration: line-through; }
+.group.trio { grid-column: span 2; background: var(--violet-soft); box-shadow: inset 0 0 0 1.5px var(--violet); }
+.group.trio .gno em { font-style: normal; color: var(--violet); margin-left: 8px; font-family: var(--sans); }
+.group.hit { box-shadow: inset 0 0 0 3px var(--blue); }
+#v-round:fullscreen { background: var(--bg); overflow: auto; padding: 32px 40px; }
+
+/* history */
+.hist-round { border-bottom: 1px solid var(--line); padding: 14px 0; }
+.hist-round summary { cursor: pointer; font-size: 18px; font-weight: 600; letter-spacing: -.02em; }
+.hist-round summary span { font-weight: 400; color: var(--mute); font-size: 15px; margin-left: 12px; letter-spacing: 0; }
+.hist { columns: 230px; column-gap: 32px; margin: 12px 0 0; padding: 0; list-style: none; font: 14px/1.9 var(--mono); }
+.hist span { color: var(--mute); margin-right: 8px; }
+
+/* finish */
+.finish { max-width: 980px; padding: 12vh 0; display: grid; gap: 32px; }
+.finish .sum { font-size: clamp(40px, 6vw, 76px); line-height: 1.02; letter-spacing: -.045em; }
+
+/* guest */
+.guest { max-width: 520px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 20px; }
+.guest h1 { font-size: 32px; letter-spacing: -.035em; line-height: 1.1; }
+.guest .timer { font-size: clamp(64px, 22vw, 104px); margin: 0; }
+.guest label { font-weight: 500; }
+.guest .field { height: 64px; font: 600 32px var(--mono); padding: 0 16px; width: 100%; margin-top: 8px; }
+.result { border-radius: 12px; box-shadow: var(--float); background: var(--card); padding: 20px; display: grid; gap: 4px; }
+.result .nums { font-size: 40px; }
+.result .me { color: var(--mute); font-weight: 400; }
+
+dialog { border: 0; border-radius: 12px; box-shadow: var(--float); background: var(--card); color: var(--ink); padding: 24px; width: min(560px, calc(100vw - 32px)); }
+dialog::backdrop { background: #0006; }
+dialog .field { width: 100%; font-family: var(--mono); font-size: 13px; }
+
+@media (max-width: 860px) {
+  .people { grid-template-columns: minmax(0, 1fr); }
+  .people > .stack { position: static; }
+  .bar { position: static; padding: 10px 16px; gap: 8px 12px; }
+  .bar .right { margin-left: 0; width: 100%; flex-wrap: wrap; }
+  .tabs { order: 5; width: 100%; overflow-x: auto; }
+  .wrap { padding: 16px; }
+  .panel { padding: 16px; }
+  .plist li { grid-template-columns: 56px minmax(0, 1fr) 108px 32px; gap: 8px; }
+  .plist .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plist .pid { display: none; }
+  .groups { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .banner.done p { font-size: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { .home::before, .home::after { animation: none; } }
+</style>
+</head>
+<body>
+
+<main id="home" class="home" hidden>
+  <h1>Face to Face.</h1>
+  <p class="lead">Случайные пары на пять минут, потом новые. Без регистрации, до 500 человек в зале.</p>
+  <div class="actions">
+    <button id="newBtn" class="btn pill primary">Новое мероприятие</button>
+    <a id="contBtn" class="btn pill" hidden></a>
+  </div>
+</main>
+
+<div id="org" hidden>
+  <header class="bar">
+    <a class="mark" href="./">Face to Face</a>
+    <input id="evName" class="ev-name" aria-label="Название мероприятия" maxlength="80">
+    <nav class="tabs">
+      <button data-view="people">Участники</button>
+      <button data-view="round">Раунд</button>
+      <button data-view="history">История</button>
+    </nav>
+    <div class="right">
+      <span id="sync" class="sync" role="status"></span>
+      <button id="shareBtn" class="btn">Ссылки</button>
+      <button id="finishBtn" class="btn">Завершить мероприятие</button>
+    </div>
+  </header>
+
+  <section id="v-people" class="wrap people" hidden>
+    <div class="stack">
+      <div class="panel stack">
+        <h2>Добавить участников</h2>
+        <textarea id="importText" class="field" spellcheck="false" placeholder="15, Аружан, ПО2302&#10;16; Дамир&#10;17 18 19 20"></textarea>
+        <div class="row-flex">
+          <button id="importBtn" class="btn primary">Добавить из текста</button>
+        </div>
+        <p class="hint">Номер, имя и группа через запятую, по одному на строку. Можно просто номера через пробел.</p>
+        <div class="row-flex">
+          <span>Номера от 1 до</span>
+          <input id="genN" class="field mono" type="number" min="1" max="1000" value="400" style="width: 96px">
+          <button id="genBtn" class="btn">Создать</button>
+        </div>
+        <p id="importMsg" role="status"></p>
+      </div>
+      <div class="panel stack">
+        <h2>Распределение</h2>
+        <p id="distrib" class="big"></p>
+        <div class="row-flex">
+          <span>Раунд длится</span>
+          <input id="duration" class="field mono" type="number" min="1" max="60" style="width: 72px">
+          <span>мин</span>
+        </div>
+        <button id="formBtn" class="btn lg primary">Сформировать пары</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="list-head">
+        <h2 style="margin: 0">Список</h2>
+        <span id="counts" class="hint"></span>
+        <input id="filter" class="field" type="search" placeholder="Найти по номеру или имени" aria-label="Поиск участника">
+        <button id="clearBtn" class="btn" hidden>Очистить список</button>
+      </div>
+      <ul id="plist" class="plist"></ul>
+    </div>
+  </section>
+
+  <section id="v-round" class="wrap" hidden>
+    <div id="roundEmpty" class="panel stack" style="max-width: 560px">
+      <p id="roundEmptyMsg" class="big"></p>
+      <div><button id="formBtn2" class="btn lg primary">Сформировать пары</button></div>
+    </div>
+    <div id="roundMain">
+      <div class="round-head">
+        <div>
+          <div class="round-title"><span id="roundNo"></span><span id="chip" class="chip"></span></div>
+          <div id="timer" class="timer">05:00</div>
+          <p id="roundStats" class="stats"></p>
+        </div>
+        <input id="findNum" class="field mono" type="search" inputmode="numeric" placeholder="Найти номер" aria-label="Найти номер в группах" style="width: 180px">
+      </div>
+      <div class="controls">
+        <button id="tStart" class="btn lg primary">Старт</button>
+        <button id="tResume" class="btn lg primary">Продолжить</button>
+        <button id="tPause" class="btn lg">Пауза</button>
+        <button id="tEnd" class="btn lg">Завершить раунд</button>
+        <span class="spacer"></span>
+        <button id="tNext" class="btn lg">Следующий раунд</button>
+        <button id="regroupBtn" class="btn lg">Пересформировать</button>
+        <button id="fsBtn" class="btn lg">На весь экран</button>
+      </div>
+      <div id="doneBar" class="banner done">
+        <p>Раунд завершён. Поблагодарите собеседника.</p>
+        <button id="tNext2" class="btn lg">Следующий раунд</button>
+      </div>
+      <div id="driftBar" class="banner drift">
+        <span id="driftMsg"></span>
+        <button id="regroupBtn2" class="btn">Пересформировать</button>
+      </div>
+      <ol id="groups" class="groups"></ol>
+    </div>
+  </section>
+
+  <section id="v-history" class="wrap" hidden>
+    <div class="panel">
+      <h2>История раундов</h2>
+      <p id="histStats" class="hint"></p>
+      <div id="histList"></div>
+    </div>
+  </section>
+
+  <section id="v-finish" class="wrap" hidden>
+    <div class="finish">
+      <p id="finSum" class="sum"></p>
+      <div class="row-flex">
+        <button id="unfinishBtn" class="btn lg">Вернуться к мероприятию</button>
+        <a class="btn lg primary" href="./">Новое мероприятие</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<main id="guest" class="guest" hidden>
+  <a class="mark" href="./">Face to Face</a>
+  <h1 id="gName"></h1>
+  <div>
+    <div class="round-title"><span id="gRound"></span><span id="gChip" class="chip" hidden></span></div>
+    <div id="gTimer" class="timer" hidden></div>
+  </div>
+  <label>Ваш номер
+    <input id="myNum" class="field" type="text" inputmode="numeric" autocomplete="off" maxlength="6">
+  </label>
+  <div id="gResult"></div>
+  <p class="hint">Страница обновляется сама, когда начинается новый раунд.</p>
+</main>
+
+<dialog id="share">
+  <div class="stack">
+    <h2>Ссылки</h2>
+    <p id="shareWarn" class="err" hidden>Облачное сохранение сейчас недоступно, поэтому ссылки не откроют мероприятие на других устройствах.</p>
+    <label class="stack" style="gap: 6px">Для участников: каждый найдёт свою группу по номеру
+      <input id="guestLink" class="field" readonly>
+    </label>
+    <label class="stack" style="gap: 6px">Для второго устройства организатора. Даёт полный доступ, не публикуйте её
+      <input id="orgLink" class="field" readonly>
+    </label>
+    <form method="dialog"><button class="btn">Закрыть</button></form>
+  </div>
+</dialog>
+
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
